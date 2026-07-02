@@ -13,19 +13,14 @@
 <style>
   :root {
     color-scheme: light;
-    --card: #ffffff;
     --ink: #15151c;
     --ink-soft: #6b6b76;
     --ink-faint: #9999a3;
     --line: #ecebf0;
     --pill-dark: #14141b;
-    --pill-dark-hover: #2a2a33;
     --accent: #7c3aed;
     --heart: #e0507a;
-    --cream: #f6ecd9;
-    --radius-lg: 28px;
     --radius-md: 18px;
-    --radius-sm: 12px;
     --shadow-card: 0 20px 60px -20px rgba(20,20,30,0.2);
     --shadow-soft: 0 8px 24px -10px rgba(20,20,30,0.14);
   }
@@ -126,15 +121,6 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.6);
     padding: 26px 26px 28px;
-  }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 10px;
   }
 
   /* ACCORDION */
@@ -442,7 +428,7 @@
 <body>
 <div class="page-bg">
   <div class="shell">
-   <div class="content">
+    <div class="content">
 
     <div class="nav">
       <div class="brand">
@@ -471,7 +457,7 @@
         <button class="accordion-header" id="categoryToggle" aria-expanded="false">
           <span class="accordion-title">Categories</span>
           <span class="accordion-meta" id="categoryMeta">All selected</span>
-          <span class="chevron" id="categoryChevron"></span>
+          <span class="chevron"></span>
         </button>
         <div class="accordion-body" id="categoryBody">
           <div class="chips" id="chipRow"></div>
@@ -482,7 +468,7 @@
         <button class="accordion-header" id="intensityToggle" aria-expanded="false">
           <span class="accordion-title">Intensity</span>
           <span class="accordion-meta" id="intensityMeta">Mix selected</span>
-          <span class="chevron" id="intensityChevron"></span>
+          <span class="chevron"></span>
         </button>
         <div class="accordion-body" id="intensityBody">
           <div class="intensity-row" id="intensityRow"></div>
@@ -511,7 +497,7 @@
         <button class="accordion-header" id="favToggle" aria-expanded="false">
           <span class="accordion-title">Favourites</span>
           <span class="accordion-meta" id="favMeta">0 saved</span>
-          <span class="chevron" id="favChevron"></span>
+          <span class="chevron"></span>
         </button>
         <div class="accordion-body" id="favBody">
           <div class="fav-list" id="favList"></div>
