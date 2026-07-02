@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Getting Closer. A conversation game for dates, parties and everyone in between</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="theme-color" content="#7c3aed">
+<style>
+  :root {
+    color-scheme: light;
+    --card: #ffffff;
+    --ink: #15151c;
+    --ink-soft: #6b6b76;
+    --ink-faint: #9999a3;
+    --line: #ecebf0;
+    --pill-dark: #14141b;
+    --pill-dark-hover: #2a2a33;
+    --accent: #7c3aed;
+    --heart: #e0507a;
+    --cream: #f6ecd9;
+    --radius-lg: 28px;
+    --radius-md: 18px;
+    --radius-sm: 12px;
+    --shadow-card: 0 20px 60px -20px rgba(20,20,30,0.2);
+    --shadow-soft: 0 8px 24px -10px rgba(20,20,30,0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #f3f1ee;
+  }
+
+  .page-bg {
+    position: relative;
+    min-height: 100vh;
+    background:
+      radial-gradient(1000px 560px at 8% -5%, rgba(255,32,150,0.55), transparent 60%),
+      radial-gradient(1000px 650px at 100% 0%, rgba(38,99,255,0.5), transparent 55%),
+      radial-gradient(800px 560px at 50% 112%, rgba(255,150,20,0.55), transparent 60%),
+      radial-gradient(800px 560px at -5% 100%, rgba(255,64,90,0.42), transparent 55%),
+      radial-gradient(700px 500px at 60% 40%, rgba(255,214,0,0.28), transparent 60%),
+      #fdf9f6;
+  }
+
+  /* Full-bleed frosted layer, no frame, shares the exact edges of the gradient behind it */
+  .shell {
+    min-height: 100vh;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+  }
+
+  /* Reading-width wrapper, invisible chrome, just keeps text and cards centred */
+  .content {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+
+  /* NAV */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 28px 0;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+  .brand-mark { filter: drop-shadow(0 3px 6px rgba(20,20,30,0.35)); flex-shrink: 0; }
+
+  /* HERO */
+  .hero { text-align: center; padding: 38px 24px 8px; }
+  .hero h1 {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    font-size: 64px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+    font-weight: 700;
+    color: var(--pill-dark);
+  }
+  .hero p {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 480px;
+    margin: 0 auto 22px;
+    line-height: 1.5;
+  }
+  .hero-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .hero-step {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    padding: 8px 14px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
+    box-shadow: var(--shadow-soft);
+  }
+  .hero-step b { color: var(--ink); font-weight: 700; }
+  .hero-arrow { color: var(--ink-faint); font-size: 13px; }
+
+  /* MAIN CARD */
+  .app-card {
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    margin: 18px 16px 16px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.6);
+    padding: 26px 26px 28px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+
+  /* ACCORDION */
+  .accordion { margin-bottom: 18px; }
+  .accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.7);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-radius: 16px;
+    padding: 13px 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px -8px rgba(20,20,30,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: background .15s ease;
+  }
+  .accordion-header:hover { background: rgba(255,255,255,0.7); }
+  .accordion-title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .accordion-meta {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin-left: auto;
+  }
+  .chevron {
+    width: 7px; height: 7px;
+    border-right: 2px solid var(--ink-soft);
+    border-bottom: 2px solid var(--ink-soft);
+    transform: rotate(45deg);
+    transition: transform .2s ease;
+    flex-shrink: 0;
+  }
+  .accordion-header[aria-expanded="true"] .chevron { transform: rotate(-135deg); }
+  .accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height .25s ease, opacity .2s ease, margin-top .25s ease;
+  }
+  .accordion-body.open {
+    max-height: 900px;
+    opacity: 1;
+    margin-top: 14px;
+  }
+
+  /* CATEGORY CHIPS */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+    user-select: none;
+    transition: all .12s ease;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: #cfcdd8; }
+  .chip.active {
+    background: rgba(124,58,237,0.16);
+    border-color: rgba(124,58,237,0.4);
+    color: var(--ink);
+  }
+  .chip.all-chip { font-weight: 700; }
+  .chip.all-chip.active {
+    background: var(--pill-dark);
+    border-color: rgba(255,255,255,0.2);
+    color: #fff;
+  }
+  .chip.optin.active {
+    background: rgba(219,39,119,0.16);
+    border-color: rgba(219,39,119,0.45);
+    color: var(--ink);
+  }
+
+  /* INTENSITY */
+  .intensity-row {
+    display: flex;
+    gap: 8px;
+  }
+  .intensity-chip {
+    flex: 1;
+    text-align: center;
+    padding: 10px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    cursor: pointer;
+    user-select: none;
+    transition: all .12s ease;
+  }
+  .intensity-chip:hover { border-color: #cfcdd8; }
+  .intensity-chip.active {
+    background: rgba(124,58,237,0.16);
+    border-color: rgba(124,58,237,0.4);
+    color: var(--ink);
+  }
+
+  /* SPINNER */
+  .topic-card-inner { display: contents; }
+  .spinner-zone {
+    text-align: center;
+    padding: 16px 10px 4px;
+    border-top: 1px dashed var(--line);
+  }
+  .topic-card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(245,243,251,0.4));
+    border: 1px solid rgba(20,20,30,0.16);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-radius: 22px;
+    padding: 48px 30px;
+    margin-bottom: 18px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: transform .12s ease;
+  }
+  .topic-card.spinning { animation: shake .08s linear infinite; }
+  @keyframes shake {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+    100% { transform: translateY(0); }
+  }
+  .topic-cat-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700;
+    color: var(--accent);
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.22);
+    padding: 5px 12px;
+    border-radius: 999px;
+  }
+  .topic-text {
+    font-size: 38px;
+    font-weight: 850;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    max-width: 600px;
+    color: var(--ink);
+  }
+  .topic-text.long { font-size: 24px; line-height: 1.3; }
+  .topic-placeholder { color: var(--ink-faint); font-weight: 600; font-size: 18px; }
+  .topic-meta {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-weight: 600;
+  }
+  .draw-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .draw-btn {
+    flex: 1;
+    background: linear-gradient(180deg, rgba(48,48,58,0.92), rgba(14,14,19,0.94));
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    padding: 17px 28px;
+    border-radius: 999px;
+    font-size: 15.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 14px 28px -12px rgba(20,20,27,0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: transform .1s ease, box-shadow .15s ease;
+  }
+  .draw-btn:hover { transform: translateY(-1px); box-shadow: 0 18px 32px -12px rgba(20,20,27,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
+  .draw-btn:active { transform: scale(0.97); }
+  .draw-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .empty-hint {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: none;
+  }
+  .empty-hint.visible { display: block; }
+
+  /* FAVOURITE BUTTON */
+  .fav-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(20,20,30,0.14);
+    background: rgba(255,255,255,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--ink-faint);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    transition: all .15s ease;
+  }
+  .fav-btn.shown { display: flex; }
+  .fav-btn.active { border-color: rgba(224,80,122,0.4); background: rgba(224,80,122,0.12); }
+  .fav-icon { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; transition: fill .15s ease, stroke .15s ease; }
+  .fav-btn.active .fav-icon { fill: var(--heart); stroke: var(--heart); stroke-width: 1.4; }
+  .fav-btn.pulse { animation: heartbeat .55s ease; }
+  @keyframes heartbeat {
+    0% { transform: scale(1); }
+    22% { transform: scale(1.38); }
+    40% { transform: scale(1); }
+    58% { transform: scale(1.22); }
+    75% { transform: scale(1); }
+    100% { transform: scale(1); }
+  }
+
+  /* FAVOURITES LIST */
+  .fav-list { display: flex; flex-direction: column; gap: 8px; }
+  .fav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .fav-item-main { flex: 1; cursor: pointer; }
+  .fav-item-cat { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 2px; }
+  .fav-item-text { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .fav-remove {
+    border: none;
+    background: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+    padding: 4px 6px;
+  }
+  .fav-remove:hover { color: var(--heart); }
+  .fav-empty { font-size: 13px; color: var(--ink-faint); padding: 6px 2px; }
+
+  /* WHAT AM I? REVEAL */
+  .reveal-instruction {
+    font-size: 13px;
+    color: var(--ink-soft);
+    max-width: 440px;
+    line-height: 1.45;
+    margin-bottom: 4px;
+  }
+  .reveal-word {
+    font-size: 38px;
+    font-weight: 850;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    filter: blur(16px);
+    user-select: none;
+    transition: filter .12s ease;
+  }
+  .reveal-word.shown { filter: blur(0); }
+  .reveal-btn {
+    background: linear-gradient(180deg, rgba(48,48,58,0.92), rgba(14,14,19,0.94));
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 12px 26px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 10px 20px -10px rgba(20,20,27,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+
+  @media (max-width: 620px) {
+    .hero h1 { font-size: 42px; }
+    .topic-text { font-size: 27px; }
+    .topic-text.long { font-size: 19px; }
+    .reveal-word { font-size: 27px; }
+  }
+</style>
+</head>
+<body>
+<div class="page-bg">
+  <div class="shell">
+   <div class="content">
+
+    <div class="nav">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 48 48" width="30" height="30" aria-hidden="true">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M18.5 6C10.4919 6 4 12.4919 4 20.5C4 38.5 28 42 28 42V35H29.5C37.5081 35 44 28.5081 44 20.5C44 12.4919 37.5081 6 29.5 6H18.5ZM24 23.5C25.3807 23.5 26.5 22.3807 26.5 21C26.5 19.6193 25.3807 18.5 24 18.5C22.6193 18.5 21.5 19.6193 21.5 21C21.5 22.3807 22.6193 23.5 24 23.5ZM34.5 21C34.5 22.3807 33.3807 23.5 32 23.5C30.6193 23.5 29.5 22.3807 29.5 21C29.5 19.6193 30.6193 18.5 32 18.5C33.3807 18.5 34.5 19.6193 34.5 21ZM16 23.5C17.3807 23.5 18.5 22.3807 18.5 21C18.5 19.6193 17.3807 18.5 16 18.5C14.6193 18.5 13.5 19.6193 13.5 21C13.5 22.3807 14.6193 23.5 16 23.5Z" fill="#14141b"/>
+        </svg>
+        GC
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>Getting Closer</h1>
+      <p>Built for friends, relationships or a full room at a party.</p>
+      <div class="hero-steps">
+        <div class="hero-step"><b>01</b>&nbsp;Pick a mood</div>
+        <div class="hero-arrow">→</div>
+        <div class="hero-step"><b>02</b>&nbsp;Draw a topic</div>
+        <div class="hero-arrow">→</div>
+        <div class="hero-step"><b>03</b>&nbsp;Talk it through</div>
+      </div>
+    </div>
+
+    <div class="app-card">
+
+      <div class="accordion">
+        <button class="accordion-header" id="categoryToggle" aria-expanded="false">
+          <span class="accordion-title">Categories</span>
+          <span class="accordion-meta" id="categoryMeta">All selected</span>
+          <span class="chevron" id="categoryChevron"></span>
+        </button>
+        <div class="accordion-body" id="categoryBody">
+          <div class="chips" id="chipRow"></div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" id="intensityToggle" aria-expanded="false">
+          <span class="accordion-title">Intensity</span>
+          <span class="accordion-meta" id="intensityMeta">Mix selected</span>
+          <span class="chevron" id="intensityChevron"></span>
+        </button>
+        <div class="accordion-body" id="intensityBody">
+          <div class="intensity-row" id="intensityRow"></div>
+        </div>
+      </div>
+
+      <div class="spinner-zone">
+        <div class="empty-hint" id="emptyHint">Try widening your categories.</div>
+        <div class="draw-row">
+          <button class="draw-btn" id="drawBtn">Draw a topic</button>
+        </div>
+
+        <div class="topic-card" id="topicCard">
+          <button class="fav-btn" id="favBtn" aria-label="Save to favourites" type="button">
+            <svg class="fav-icon" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+              <path d="M12 21s-6.87-4.35-9.53-8.35C.86 10.1 1.5 6.6 4.4 4.9c2.35-1.38 5.1-.7 6.7 1.3l.9 1.12.9-1.12c1.6-2 4.35-2.68 6.7-1.3 2.9 1.7 3.54 5.2 1.93 7.75C18.87 16.65 12 21 12 21z"/>
+            </svg>
+          </button>
+          <div class="topic-card-inner" id="topicCardInner">
+            <div class="topic-placeholder" id="topicPlaceholder">Press the button to draw your first topic</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="accordion-header" id="favToggle" aria-expanded="false">
+          <span class="accordion-title">Favourites</span>
+          <span class="accordion-meta" id="favMeta">0 saved</span>
+          <span class="chevron" id="favChevron"></span>
+        </button>
+        <div class="accordion-body" id="favBody">
+          <div class="fav-list" id="favList"></div>
+        </div>
+      </div>
+
+    </div>
+   </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  function E(t) { return { t: t, i: "e" }; }
+  function H(t) { return { t: t, i: "h" }; }
+
+  // ---------- CATEGORY DATA ----------
+  var DEFAULT_CATEGORIES = [
+    { id: "comfort", emoji: "🛋️", name: "Comfort", topics: [
+      E("The most underrated comfort food"), E("Your ideal lazy Sunday, defended"), E("The best seat in your house"),
+      E("A blanket you'd never give up"), E("Why naps are underrated"), E("The perfect cup of tea, defended"),
+      E("Hot bath or hot shower?"), E("The smell that means “home”"), E("Why mess is actually comforting"),
+      E("The most comforting sound in the world"), E("Sweatpants: a love letter"), E("The one meal that fixes a bad day"),
+      E("The TV show you rewatch on a bad day"), E("Defend: pyjamas all day is a valid choice"), E("The best excuse to cancel plans"),
+      E("A smell that instantly calms you down"), E("Why Sunday nights get such a bad reputation"), E("The most comforting place you've ever lived"),
+      E("Soup: the most comforting food, defended"), E("The one snack you always have on standby")
+    ]},
+    { id: "work", emoji: "💼", name: "Work", topics: [
+      E("The worst meeting habit"), E("Open-plan offices: defend or destroy"), E("Why “quick call” is a lie"),
+      E("The best excuse to leave early"), E("A skill school never taught you"), E("Why Mondays get a bad rap"),
+      E("The most useless job title"), E("Remote work: friend or foe?"), E("Why everyone secretly loves a snow day"),
+      E("The four-day week, argued"), E("A meeting that should've been an email"), E("The worst piece of career advice"),
+      E("The worst kind of coworker"), E("Why open offices kill productivity"), E("Defend: working from bed is fine"),
+      E("The most pointless office tradition"), E("A job title that means nothing"), E("Why everyone overuses the word “synergy”"),
+      E("The best part of a commute"), E("Office small talk, defended or destroyed")
+    ]},
+    { id: "travel", emoji: "✈️", name: "Travel", topics: [
+      E("Roast the middle seat"), E("The most overrated destination"), E("Why airports bring out the worst in people"),
+      E("Window seat or aisle. Defend your pick"), E("The one thing you always overpack"), E("A city that disappointed you"),
+      E("Why jet lag is basically a personality test"), E("The worst travel companion trait"), E("Solo travel vs group travel"),
+      E("A souvenir you regret buying"), E("The most underrated form of transport"), E("Why road trips beat flights"),
+      E("The most overpacked item in your suitcase"), E("Defend: budget airlines are underrated"), E("The worst hotel you've ever stayed in"),
+      E("A travel hack everyone should know"), E("Why locals always know the best food"), E("The most overrated bucket list destination"),
+      E("Packing light vs packing for everything"), E("The best part of coming home")
+    ]},
+    { id: "confessions", emoji: "🎭", name: "Confessions", topics: [
+      E("A small lie I'm glad I told"), E("The worst gift I ever gave"), E("A guilty pleasure I won't apologise for"),
+      E("Something I pretend to understand"), H("A habit I'll never admit to in person"), E("The pettiest thing I've ever done"),
+      E("A song I'm embarrassed to love"), H("The last thing I lied about"), E("A rule I break on purpose"),
+      H("Something I judged someone for, then did myself"), E("The most useless thing I own"), H("A childhood fear I never grew out of"),
+      H("A purchase I still haven't told anyone about"), H("A habit I'd hide on a first date"), E("A white lie that backfired"),
+      E("The most embarrassing thing in my search history"), H("A friendship I let fade and don't regret"), E("Something I copied without crediting anyone"),
+      H("A promise I never kept"), E("The pettiest grudge I'm still holding")
+    ]},
+    { id: "philosophy", emoji: "🧠", name: "Philosophy", topics: [
+      H("Is free will an illusion?"), H("Does everything happen for a reason?"), E("Can money buy happiness. Really?"),
+      H("Is honesty always the best policy?"), H("Are humans naturally good or selfish?"), H("What makes a life “successful”?"),
+      E("Is nostalgia a trap?"), H("Do we control our own personality?"), E("Is boredom necessary?"),
+      H("What does it mean to “know thyself”?"), E("Is privacy a modern luxury?"), E("Are rules made to be broken?"),
+      E("Is competition good for us?"), E("Can you be friends with everyone?"), E("Is ignorance ever bliss?"),
+      H("Does intention matter more than outcome?"), E("Is ambition overrated?"), E("Can a machine ever be creative?"),
+      H("Is suffering necessary for growth?"), H("What do we owe strangers?")
+    ]},
+    { id: "hottakes", emoji: "🌶️", name: "Hot takes", topics: [
+      E("Cereal is a soup"), E("Reply-all should be banned"), E("Birthdays are overrated past 25"),
+      E("The best music is from your teenage years"), E("Small talk is underrated"), E("Sunday is the worst day of the week"),
+      E("Coffee is overhyped"), E("New Year's resolutions don't work"), E("Group chats peak after a year"),
+      E("The customer isn't always right"), E("Most podcasts are too long"), E("Pineapple belongs on pizza"),
+      E("Tipping culture has gone too far"), E("Remote work killed office friendships"), E("Most self-help advice is common sense"),
+      E("Streaming ruined the joy of TV"), E("Everyone overrates their hometown"), E("Social media made us worse listeners"),
+      E("Most diets don't actually work"), E("Loyalty programmes are a scam")
+    ]},
+    { id: "roast", emoji: "🔥", name: "Roast A Popular Thing", topics: [
+      E("Roast the Marvel Cinematic Universe"), E("Roast influencer culture"), E("Roast the 9-to-5"),
+      E("Roast modern dating apps"), E("Roast self-help books"), E("Roast true crime podcasts"),
+      E("Roast the gym selfie"), E("Roast wellness culture"), E("Roast LinkedIn posts"),
+      E("Roast reality TV"), E("Roast the airport lounge crowd"), E("Roast oat milk lattes"),
+      E("Roast productivity influencers"), E("Roast the office Christmas party"), E("Roast morning routines on social media"),
+      E("Roast subscription services"), E("Roast networking events"), E("Roast the modern CV"),
+      E("Roast airport security"), E("Roast group projects")
+    ]},
+    { id: "defend", emoji: "🛡️", name: "Defend The Worst Take", topics: [
+      E("Defend: mornings are better than evenings"), E("Defend: socks with sandals are fine"), E("Defend: silent movies beat talkies"),
+      E("Defend: handwriting is dying for a good reason"), E("Defend: the book is NOT always better"), E("Defend: working weekends sometimes makes sense"),
+      E("Defend: vanilla is the best ice cream flavour"), E("Defend: flying economy is underrated"), E("Defend: cold pizza beats hot pizza"),
+      E("Defend: doing nothing is productive"), E("Defend: losing is sometimes better than winning"), E("Defend: rules without exceptions are good"),
+      E("Defend: remakes can beat the originals"), E("Defend: small talk is essential"), E("Defend: queuing builds character"),
+      E("Defend: long meetings can be useful"), E("Defend: instant noodles are a proper meal"), E("Defend: karaoke should be mandatory at parties"),
+      E("Defend: it's fine to read the ending first"), E("Defend: everyone should work retail once")
+    ]},
+    { id: "eli5", emoji: "👧", name: "Explain It Like You're 5", topics: [
+      E("Explain why the sky is blue"), E("Explain how the internet works"), E("Explain inflation"),
+      E("Explain why we dream"), E("Explain how a plane stays up"), E("Explain why ice floats"),
+      E("Explain interest rates"), E("Explain why we get hiccups"), E("Explain how Wi-Fi works"),
+      E("Explain why time zones exist"), E("Explain why the moon changes shape"), E("Explain how money is made"),
+      E("Explain how vaccines work"), E("Explain why we have leap years"), E("Explain how GPS knows where you are"),
+      E("Explain why the ocean is salty"), E("Explain how a fridge keeps things cold"), E("Explain why we yawn"),
+      E("Explain how bread rises"), E("Explain why stars twinkle")
+    ]},
+    { id: "conspiracy", emoji: "🕵️", name: "Conspiracy Corner", topics: [
+      E("Birds aren't real. Defend it"), E("We never went back to the moon, why?"), E("Your phone is always listening. Discuss"),
+      E("The “five second rule” is a conspiracy"), E("Mercury retrograde actually does something"), E("Big Tech wants you addicted, on purpose"),
+      E("Some products are designed to break"), E("The “lost sock” dimension is real"), E("Coincidences are never really coincidences"),
+      E("Your search history shapes you"), E("Adverts know what you're thinking before you do"), E("“Everything happens for a reason” is the real conspiracy"),
+      E("Self-checkout was designed to replace you"), E("Your fridge knows more than it lets on"), E("Streaming services shadow ban your favourite shows"),
+      E("Loyalty cards are tracking more than points"), E("The “new phone smell” is engineered on purpose"), E("Shops play music to make you spend more"),
+      E("Autocorrect has opinions about you"), E("Public Wi-Fi is never really free")
+    ]},
+    { id: "millennial", emoji: "💽", name: "Millennial", topics: [
+      E("Side parts and skinny jeans, defended"), E("Why millennials love avocado toast so much"), E("The “adulting” struggle, explained"),
+      E("Why everyone's burnt out by 30"), E("Buzzfeed quizzes were peak culture"), E("The “treat yourself” mentality, defended"),
+      E("Why millennials still text in paragraphs"), E("Harry Potter house pride, explained"), E("The student loan struggle"),
+      E("Why “doing it for the plot” matters"), E("Nostalgia for dial-up internet"), E("The “main character energy” era"),
+      E("Why millennials romanticise quitting their job"), E("The group chat that never dies"), E("Why everyone went through a Pinterest quotes phase"),
+      E("Side hustles, the millennial obsession"), E("Why brunch became a personality trait"), E("The “new year, new me” cycle, explained"),
+      E("Why everyone's nostalgic for MSN Messenger"), E("The millennial guilt of not owning a home")
+    ]},
+    { id: "genz", emoji: "📱", name: "Gen Z", topics: [
+      E("Skibidi, explained to a confused adult"), E("Why everything is “lowkey” or “highkey”"), E("TikTok brain rot. Real or overblown?"),
+      E("The “no thoughts, just vibes” mindset"), E("Why nobody answers phone calls anymore"), E("Texting in lowercase only, defended"),
+      E("The four-day work week, demanded"), E("“It's giving”. Explain the phrase"), E("Why everyone has a side hustle now"),
+      E("Quiet quitting, explained"), E("The “delulu is the solulu” mindset"), E("Why Gen Z hates small talk on calls"),
+      E("Why everything has to be “aesthetic” now"), E("Voicemail is basically a dead language"), E("Why subtitles are non-negotiable now"),
+      E("“Rizz”, explained to someone over 40"), E("Why everyone's already over LinkedIn"), E("The death of the nine-to-five dream"),
+      E("Why everyone's a main character online"), E("Touch grass, explained")
+    ]},
+    { id: "stocks", emoji: "📈", name: "Stock Market", topics: [
+      E("AI stocks. Bubble or breakthrough?"), E("Is gold still a safe bet?"), E("Crypto: revolution or roulette?"),
+      E("The stock everyone's wrong about"), E("Is day trading just gambling?"), E("A company you'd bet your savings on"),
+      E("Are meme stocks dead?"), E("Index funds vs picking your own"), E("The most overhyped IPO"),
+      E("Will interest rates ever feel normal again?"), E("A stock you regret not buying"), E("Is the housing market a bubble?"),
+      E("Should everyone invest young?"), E("Is property still the safest investment?"), E("The most overhyped tech stock"),
+      E("Are dividends underrated?"), E("Is timing the market ever worth it?"), E("A sector everyone's sleeping on"),
+      E("Are ETFs too good to be true?"), E("Will cash ever go out of fashion?")
+    ]}
+  ];
+
+  var OPTIN_CATEGORIES = [
+    { id: "relationships", emoji: "❤️", name: "Relationships", topics: [
+      E("Given the choice of anyone in the world, who would you want as a dinner guest?"), E("Would you like to be famous? In what way?"),
+      E("Before making a phone call, do you ever rehearse what you're going to say? Why?"), E("What would constitute a \"perfect\" day for you?"),
+      E("When did you last sing to yourself? To someone else?"), E("If you could live to 90 and keep either the mind or body of a 30-year-old for the last 60 years, which would you choose?"),
+      E("Do you have a secret hunch about how you'll die?"), E("Name three things you and the other person seem to have in common."),
+      E("What are you most grateful for in your life?"), E("If you could change one thing about how you were raised, what would it be?"),
+      E("Take four minutes to tell your life story in as much detail as possible."), E("If you could wake up tomorrow with one new quality or ability, what would it be?"),
+      H("If a crystal ball could tell you one truth about yourself, your life or your future, what would you want to know?"), H("Is there something you've dreamed of doing for a long time? Why haven't you done it?"),
+      H("What's the greatest accomplishment of your life so far?"), H("What do you value most in a friendship?"),
+      H("What's your most treasured memory?"), H("What's your most painful memory?"),
+      H("If you knew you'd die suddenly in a year, would you change how you're living now? Why?"), H("What does friendship mean to you?"),
+      H("What role do love and affection play in your life?"), H("Share five things you consider positive about the other person."),
+      H("How close and warm is your family? Was your childhood happier than most people's?"), H("How do you feel about your relationship with your mother?"),
+      H("Make three true \"we\" statements. For example, \"We are both feeling...\""), H("Finish this sentence: \"I wish I had someone with whom I could share...\""),
+      H("If you were about to become close friends, what would be important for them to know about you?"), H("Say what you like about the other person. Be honest, more than you'd usually say to someone new."),
+      H("Share an embarrassing moment from your life."), H("When did you last cry in front of someone? What about alone?"),
+      H("Tell them something you already love about them."), H("What, if anything, is too serious to be joked about?"),
+      H("If you had to leave tonight with no chance to speak to anyone again, what would you regret not saying, and to whom?"), H("Your house is on fire. Everyone and every pet is safe. You have time for one more item. What do you grab, and why?"),
+      H("Whose death in your family would affect you the most? Why?"), H("Share a real problem and ask for advice on how to handle it.")
+    ]},
+    { id: "wyr", emoji: "🔀", name: "Would You Rather", topics: [
+      E("Would you rather always be 10 minutes late or 20 minutes early?"), E("Would you rather have the ability to fly or be invisible?"),
+      E("Would you rather only ever eat your favourite meal or never eat it again?"), E("Would you rather lose your phone for a week or your wallet for a week?"),
+      E("Would you rather always speak your mind or say nothing for a whole day?"), E("Would you rather live without music or without films?"),
+      E("Would you rather be famous for something embarrassing or unknown for something brilliant?"), E("Would you rather have unlimited holiday days or unlimited money for one holiday?"),
+      E("Would you rather sing instead of speak or dance everywhere you walk?"), E("Would you rather give up social media or give up TV?"),
+      E("Would you rather always know when someone is lying or always get away with your own lies?"), E("Would you rather have a rewind button or a pause button on life?"),
+      E("Would you rather live in a treehouse or a houseboat?"), E("Would you rather give up hot drinks or cold drinks forever?"),
+      E("Would you rather always overdress or always underdress for events?"), E("Would you rather have the best seat at every event or free entry to every event?"),
+      H("Would you rather know how you die or when you die?"), H("Would you rather be brutally honest all the time or a comforting liar when it counts?"),
+      H("Would you rather relive your best memory forever or make a new one you'll never forget?"), H("Would you rather lose all your old photos or all your new ones from this year?")
+    ]},
+    { id: "whatami", emoji: "💥", name: "What Am I?", noIntensity: true, topics: [
+      E("Phone"), E("Umbrella"), E("Bridge"), E("Mirror"), E("Balloon"), E("Compass"), E("Candle"), E("Elevator"),
+      E("Keyboard"), E("Volcano"), E("Passport"), E("Blanket"), E("Fireworks"), E("Whisper"), E("Deadline"),
+      E("Nostalgia"), E("Jealousy"), E("Sunrise"), E("Silence"), E("Rumour"), E("Courage"), E("Habit"),
+      E("Souvenir"), E("Echo"), E("Anchor"), E("Detour"), E("Loophole"), E("Threshold"), E("Milestone"),
+      E("Suitcase"), E("Doormat"), E("Recipe"), E("Alibi"), E("Sequel"), E("Déjà vu"), E("Karma"),
+      E("Gravity"), E("Thermostat"), E("Escalator"), E("Backbone")
+    ]}
+  ];
+
+  var GENERAL_TOPICS = [
+    "One food I can eat forever and not get bored of",
+    "AI taking jobs. Your take",
+    "Latest movie or series. Worth the hype?",
+    "The most overrated holiday",
+    "A trend you don't understand",
+    "The best invention of the last decade",
+    "Something everyone gets wrong about you",
+    "The most underrated app on your phone"
+  ];
+
+  var CATEGORIES = DEFAULT_CATEGORIES.concat(OPTIN_CATEGORIES);
+  var CATEGORY_BY_ID = {};
+  CATEGORIES.forEach(function (c) { CATEGORY_BY_ID[c.id] = c; });
+
+  // Flatten into topic objects { id, text, categoryId, categoryName, intensity }
+  var ALL_TOPICS = [];
+  var ALL_TOPICS_BY_ID = {};
+  CATEGORIES.forEach(function (cat) {
+    cat.topics.forEach(function (topic, i) {
+      var t = {
+        id: cat.id + "-" + i,
+        text: topic.t,
+        categoryId: cat.id,
+        categoryName: cat.name,
+        intensity: topic.i
+      };
+      ALL_TOPICS.push(t);
+      ALL_TOPICS_BY_ID[t.id] = t;
+    });
+  });
+  GENERAL_TOPICS.forEach(function (text, i) {
+    var t = { id: "general-" + i, text: text, categoryId: "general", categoryName: "General", intensity: "e" };
+    ALL_TOPICS.push(t);
+    ALL_TOPICS_BY_ID[t.id] = t;
+  });
+
+  // ---------- STORAGE ----------
+  var LS_KEY = "closer_state_v1";
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return { spins: {}, favourites: [], lastSubset: null };
+  }
+
+  var state = loadState();
+  if (!state.favourites) state.favourites = [];
+
+  function saveState() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  // ---------- SELECTION STATE ----------
+  var ALL_IDS = DEFAULT_CATEGORIES.map(function (c) { return c.id; });
+  var selectedDefault = ALL_IDS.slice();
+  var selectedOptin = [];
+  var currentIntensity = "mix"; // "easy" | "mix" | "hard"
+
+  function isAllActive() {
+    return ALL_IDS.every(function (id) { return selectedDefault.indexOf(id) !== -1; });
+  }
+
+  function renderChips() {
+    var row = document.getElementById("chipRow");
+    row.innerHTML = "";
+
+    var allChip = document.createElement("div");
+    allChip.className = "chip all-chip" + (isAllActive() ? " active" : "");
+    allChip.textContent = "📚 All";
+    allChip.addEventListener("click", function () {
+      if (isAllActive()) {
+        var subset = state.lastSubset && state.lastSubset.length ? state.lastSubset : [ALL_IDS[0]];
+        selectedDefault = subset.slice();
+      } else {
+        state.lastSubset = selectedDefault.slice();
+        selectedDefault = ALL_IDS.slice();
+      }
+      saveState();
+      renderChips();
+      updateAvailability();
+    });
+    row.appendChild(allChip);
+
+    DEFAULT_CATEGORIES.forEach(function (cat) {
+      var chip = document.createElement("div");
+      var active = selectedDefault.indexOf(cat.id) !== -1;
+      chip.className = "chip" + (active ? " active" : "");
+      chip.textContent = cat.emoji + " " + cat.name;
+      chip.addEventListener("click", function () {
+        if (isAllActive()) {
+          selectedDefault = [cat.id];
+        } else if (active) {
+          selectedDefault = selectedDefault.filter(function (id) { return id !== cat.id; });
+        } else {
+          selectedDefault.push(cat.id);
+        }
+        saveState();
+        renderChips();
+        updateAvailability();
+      });
+      row.appendChild(chip);
+    });
+
+    OPTIN_CATEGORIES.forEach(function (cat) {
+      var chip = document.createElement("div");
+      var active = selectedOptin.indexOf(cat.id) !== -1;
+      chip.className = "chip optin" + (active ? " active" : "");
+      chip.textContent = cat.emoji + " " + cat.name;
+      chip.addEventListener("click", function () {
+        if (active) {
+          selectedOptin = selectedOptin.filter(function (id) { return id !== cat.id; });
+        } else {
+          selectedOptin.push(cat.id);
+          playHeartbeat();
+        }
+        saveState();
+        renderChips();
+        updateAvailability();
+      });
+      row.appendChild(chip);
+    });
+
+    updateCategoryMeta();
+  }
+
+  // ---------- ACCORDIONS ----------
+  function wireAccordion(toggleId, bodyId) {
+    var toggle = document.getElementById(toggleId);
+    var body = document.getElementById(bodyId);
+    toggle.addEventListener("click", function () {
+      var open = body.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+  wireAccordion("categoryToggle", "categoryBody");
+  wireAccordion("favToggle", "favBody");
+  wireAccordion("intensityToggle", "intensityBody");
+
+  var categoryMeta = document.getElementById("categoryMeta");
+  function updateCategoryMeta() {
+    if (isAllActive()) {
+      categoryMeta.textContent = selectedOptin.length > 0 ? "All selected ♥" : "All selected";
+    } else {
+      var total = selectedDefault.length + selectedOptin.length;
+      categoryMeta.textContent = total + " selected";
+    }
+  }
+
+  // ---------- INTENSITY ----------
+  var INTENSITIES = [
+    { id: "easy", label: "Easy" },
+    { id: "mix", label: "Mix" },
+    { id: "hard", label: "Hard" }
+  ];
+
+  function renderIntensity() {
+    var row = document.getElementById("intensityRow");
+    row.innerHTML = "";
+    INTENSITIES.forEach(function (level) {
+      var chip = document.createElement("div");
+      chip.className = "intensity-chip" + (currentIntensity === level.id ? " active" : "");
+      chip.textContent = level.label;
+      chip.addEventListener("click", function () {
+        var changed = currentIntensity !== level.id;
+        currentIntensity = level.id;
+        renderIntensity();
+        updateAvailability();
+        if (changed && level.id === "hard") playIntensitySound();
+      });
+      row.appendChild(chip);
+    });
+    var metaEl = document.getElementById("intensityMeta");
+    var current = INTENSITIES.filter(function (l) { return l.id === currentIntensity; })[0];
+    if (metaEl && current) metaEl.textContent = current.label + " selected";
+  }
+
+  // Hard only: the classic "dun, dun, DUNNN" suspense sting. Easy and Mix are silent.
+  function playIntensitySound() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      var ctx = new Ctx();
+      var now = ctx.currentTime;
+      function dun(time, freq, dur, vol) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(vol, time + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + dur + 0.02);
+      }
+      dun(now, 110, 0.15, 0.06);
+      dun(now + 0.24, 110, 0.15, 0.06);
+      dun(now + 0.5, 92, 0.85, 0.075);
+    } catch (e) {}
+  }
+
+  // ---------- POOL / PICK LOGIC ----------
+  function poolForCategory(catId) {
+    var pool = ALL_TOPICS.filter(function (t) { return t.categoryId === catId; });
+    var cat = CATEGORY_BY_ID[catId];
+    if (cat && cat.noIntensity) return pool;
+    if (currentIntensity === "mix") return pool;
+    var want = currentIntensity === "easy" ? "e" : "h";
+    return pool.filter(function (t) { return t.intensity === want; });
+  }
+
+  function getBuckets() {
+    var buckets = selectedDefault.concat(selectedOptin);
+    if (isAllActive()) buckets.push("general");
+    return buckets.filter(function (id) { return poolForCategory(id).length > 0; });
+  }
+
+  function pickTopic() {
+    var buckets = getBuckets();
+    if (!buckets.length) return null;
+    var catId = buckets[Math.floor(Math.random() * buckets.length)];
+    var pool = poolForCategory(catId);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function updateAvailability() {
+    var hasAny = getBuckets().length > 0;
+    drawBtn.disabled = !hasAny;
+    document.getElementById("emptyHint").classList.toggle("visible", !hasAny);
+  }
+
+  // ---------- CARD RENDERING ----------
+  var topicCard = document.getElementById("topicCard");
+  var topicCardInner = document.getElementById("topicCardInner");
+  var drawBtn = document.getElementById("drawBtn");
+  var favBtn = document.getElementById("favBtn");
+  var currentTopic = null;
+
+  function escapeHtml(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function renderTopicCard(t, isShuffling) {
+    if (t.categoryId === "whatami" && !isShuffling) {
+      topicCardInner.innerHTML =
+        '<div class="topic-cat-tag">' + t.categoryName.replace("What Am I?", "💥 What Am I?") + '</div>' +
+        '<div class="reveal-instruction">Describe it without saying the word. Everyone else guesses. Only the describer should look, hold the button to peek.</div>' +
+        '<button class="reveal-btn" id="revealBtn" type="button">Hold to reveal</button>' +
+        '<div class="reveal-word" id="revealWord">' + escapeHtml(t.text) + '</div>';
+      var revealBtn = document.getElementById("revealBtn");
+      var revealWord = document.getElementById("revealWord");
+      var show = function () { revealWord.classList.add("shown"); };
+      var hide = function () { revealWord.classList.remove("shown"); };
+      revealBtn.addEventListener("pointerdown", show);
+      revealBtn.addEventListener("pointerup", hide);
+      revealBtn.addEventListener("pointerleave", hide);
+      revealBtn.addEventListener("pointercancel", hide);
+      return;
+    }
+    var spins = state.spins[t.id] || 0;
+    var longClass = t.text.length > 70 ? " long" : "";
+    topicCardInner.innerHTML =
+      '<div class="topic-cat-tag">' + t.categoryName + '</div>' +
+      '<div class="topic-text' + longClass + '">' + escapeHtml(t.text) + '</div>' +
+      (isShuffling ? "" : '<div class="topic-meta">Seen ' + spins + " time" + (spins === 1 ? "" : "s") + "</div>");
+  }
+
+  function updateFavButton() {
+    if (!currentTopic) {
+      favBtn.classList.remove("shown", "active");
+      return;
+    }
+    favBtn.classList.add("shown");
+    favBtn.classList.toggle("active", state.favourites.indexOf(currentTopic.id) !== -1);
+  }
+
+  // Roller-deck flip tick, a short mechanical click rather than a slot-machine ding.
+  // isFinal gives the settling flip a slightly lower, longer tone.
+  function playFlipTick(isFinal) {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      var ctx = new Ctx();
+      var now = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = "triangle";
+      var base = isFinal ? 150 : (170 + Math.random() * 40);
+      var dur = isFinal ? 0.1 : 0.05;
+      osc.frequency.setValueAtTime(base, now);
+      osc.frequency.exponentialRampToValueAtTime(base * 0.75, now + dur);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(isFinal ? 0.14 : 0.08, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + dur + 0.02);
+    } catch (e) {}
+  }
+
+  function draw() {
+    if (getBuckets().length === 0) return;
+    drawBtn.disabled = true;
+    topicCard.classList.add("spinning");
+    favBtn.classList.remove("shown");
+
+    var ticks = 0;
+    var maxTicks = 9;
+    var interval = setInterval(function () {
+      var t = pickTopic();
+      if (t) renderTopicCard(t, true);
+      ticks++;
+      playFlipTick(false);
+      if (ticks >= maxTicks) {
+        clearInterval(interval);
+        var final = pickTopic();
+        currentTopic = final;
+        if (final) {
+          state.spins[final.id] = (state.spins[final.id] || 0) + 1;
+          saveState();
+          renderTopicCard(final, false);
+          playFlipTick(true);
+        }
+        topicCard.classList.remove("spinning");
+        drawBtn.disabled = false;
+        updateFavButton();
+      }
+    }, 65);
+  }
+
+  drawBtn.addEventListener("click", draw);
+
+  // Short, soft "lub-dub" heartbeat, synthesised so no audio file is needed.
+  function playHeartbeat() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      var ctx = new Ctx();
+      function thump(time, freq, dur, vol) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, time);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.6, time + dur);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(vol, time + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + dur + 0.02);
+      }
+      var now = ctx.currentTime;
+      thump(now, 95, 0.12, 0.2);
+      thump(now + 0.16, 80, 0.14, 0.14);
+    } catch (e) {}
+  }
+
+  favBtn.addEventListener("animationend", function () {
+    favBtn.classList.remove("pulse");
+  });
+
+  favBtn.addEventListener("click", function () {
+    if (!currentTopic) return;
+    var idx = state.favourites.indexOf(currentTopic.id);
+    var wasSaved = idx !== -1;
+    if (wasSaved) {
+      state.favourites.splice(idx, 1);
+    } else {
+      state.favourites.push(currentTopic.id);
+    }
+    saveState();
+    updateFavButton();
+    renderFavourites();
+    if (!wasSaved) {
+      favBtn.classList.remove("pulse");
+      void favBtn.offsetWidth; // restart animation if clicked in quick succession
+      favBtn.classList.add("pulse");
+      playHeartbeat();
+    }
+  });
+
+  // ---------- FAVOURITES ----------
+  var favMeta = document.getElementById("favMeta");
+  var favList = document.getElementById("favList");
+
+  function renderFavourites() {
+    favMeta.textContent = state.favourites.length + " saved";
+    favList.innerHTML = "";
+    if (!state.favourites.length) {
+      var empty = document.createElement("div");
+      empty.className = "fav-empty";
+      empty.textContent = "Nothing saved yet. Tap the heart on a topic to keep it here.";
+      favList.appendChild(empty);
+      return;
+    }
+    state.favourites.forEach(function (id) {
+      var t = ALL_TOPICS_BY_ID[id];
+      if (!t) return;
+      var item = document.createElement("div");
+      item.className = "fav-item";
+
+      var main = document.createElement("div");
+      main.className = "fav-item-main";
+      main.innerHTML = '<div class="fav-item-cat">' + t.categoryName + '</div><div class="fav-item-text">' + escapeHtml(t.text) + "</div>";
+      main.addEventListener("click", function () {
+        currentTopic = t;
+        renderTopicCard(t, false);
+        updateFavButton();
+      });
+
+      var remove = document.createElement("button");
+      remove.className = "fav-remove";
+      remove.setAttribute("aria-label", "Remove from favourites");
+      remove.textContent = "✕";
+      remove.addEventListener("click", function () {
+        state.favourites = state.favourites.filter(function (fid) { return fid !== id; });
+        saveState();
+        renderFavourites();
+        updateFavButton();
+      });
+
+      item.appendChild(main);
+      item.appendChild(remove);
+      favList.appendChild(item);
+    });
+  }
+
+  // ---------- INIT ----------
+  renderChips();
+  renderIntensity();
+  renderFavourites();
+  updateAvailability();
+})();
+</script>
+</body>
+</html>
