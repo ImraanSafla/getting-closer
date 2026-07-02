@@ -517,7 +517,7 @@
       </div>
 
     </div>
-   </div>
+    </div>
   </div>
 </div>
 
@@ -529,11 +529,13 @@
   function H(t) { return { t: t, i: "h" }; }
 
   // ---------- SHARED AUDIO ----------
-  // One AudioContext, reused for every sound. iOS Safari suspends new contexts
-  // unless they're created and resumed inside a direct user gesture, and can
-  // silently refuse audio if a fresh context is spun up every time instead.
+  // One AudioContext, reused for every sound. Mobile sound support was unreliable
+  // (iOS Safari in particular), so sound is desktop-only: real pointer + hover
+  // capability is used as the "not a touch device" signal.
   var audioCtx = null;
+  var soundEnabled = !!(window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches);
   function getAudioContext() {
+    if (!soundEnabled) return null;
     var Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
     if (!audioCtx) audioCtx = new Ctx();
