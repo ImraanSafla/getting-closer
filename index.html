@@ -140,7 +140,6 @@
     box-shadow: 0 4px 14px -8px rgba(20,20,30,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
     transition: background .15s ease;
   }
-  .accordion-header:hover { background: rgba(255,255,255,0.7); }
   .accordion-title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
   .accordion-meta {
     font-size: 12.5px;
@@ -191,7 +190,6 @@
     transition: all .12s ease;
     white-space: nowrap;
   }
-  .chip:hover { border-color: #cfcdd8; }
   .chip.active {
     background: rgba(124,58,237,0.16);
     border-color: rgba(124,58,237,0.4);
@@ -230,7 +228,6 @@
     user-select: none;
     transition: all .12s ease;
   }
-  .intensity-chip:hover { border-color: #cfcdd8; }
   .intensity-chip.active {
     background: rgba(124,58,237,0.16);
     border-color: rgba(124,58,237,0.4);
@@ -314,7 +311,6 @@
     box-shadow: 0 14px 28px -12px rgba(20,20,27,0.55), inset 0 1px 0 rgba(255,255,255,0.25);
     transition: transform .1s ease, box-shadow .15s ease;
   }
-  .draw-btn:hover { transform: translateY(-1px); box-shadow: 0 18px 32px -12px rgba(20,20,27,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
   .draw-btn:active { transform: scale(0.97); }
   .draw-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   .empty-hint {
@@ -383,7 +379,6 @@
     line-height: 1;
     padding: 4px 6px;
   }
-  .fav-remove:hover { color: var(--heart); }
   .fav-empty { font-size: 13px; color: var(--ink-faint); padding: 6px 2px; }
 
   /* WHAT AM I? REVEAL */
@@ -417,8 +412,24 @@
     box-shadow: 0 10px 20px -10px rgba(20,20,27,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
   }
 
+  /* Hover only on devices that actually have a real pointer, so nothing gets stuck
+     mid-hover on touch screens after a tap. */
+  @media (hover: hover) and (pointer: fine) {
+    .accordion-header:hover { background: rgba(255,255,255,0.7); }
+    .chip:hover { border-color: #cfcdd8; }
+    .intensity-chip:hover { border-color: #cfcdd8; }
+    .draw-btn:hover { transform: translateY(-1px); box-shadow: 0 18px 32px -12px rgba(20,20,27,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
+    .fav-remove:hover { color: var(--heart); }
+  }
+
   @media (max-width: 620px) {
+    .content { padding: 16px 8px 48px; }
+    .nav { justify-content: center; padding: 30px 14px 0; }
+    .brand-text { display: none; }
+    .brand-mark { width: 96px; height: 96px; }
+    .hero { padding: 20px 14px 8px; }
     .hero h1 { font-size: 42px; }
+    .app-card { margin: 14px 2px 14px; padding: 20px 14px 22px; }
     .topic-text { font-size: 27px; }
     .topic-text.long { font-size: 19px; }
     .reveal-word { font-size: 27px; }
@@ -435,7 +446,7 @@
         <svg class="brand-mark" viewBox="0 0 48 48" width="30" height="30" aria-hidden="true">
           <path fill-rule="evenodd" clip-rule="evenodd" d="M18.5 6C10.4919 6 4 12.4919 4 20.5C4 38.5 28 42 28 42V35H29.5C37.5081 35 44 28.5081 44 20.5C44 12.4919 37.5081 6 29.5 6H18.5ZM24 23.5C25.3807 23.5 26.5 22.3807 26.5 21C26.5 19.6193 25.3807 18.5 24 18.5C22.6193 18.5 21.5 19.6193 21.5 21C21.5 22.3807 22.6193 23.5 24 23.5ZM34.5 21C34.5 22.3807 33.3807 23.5 32 23.5C30.6193 23.5 29.5 22.3807 29.5 21C29.5 19.6193 30.6193 18.5 32 18.5C33.3807 18.5 34.5 19.6193 34.5 21ZM16 23.5C17.3807 23.5 18.5 22.3807 18.5 21C18.5 19.6193 17.3807 18.5 16 18.5C14.6193 18.5 13.5 19.6193 13.5 21C13.5 22.3807 14.6193 23.5 16 23.5Z" fill="#14141b"/>
         </svg>
-        GC
+        <span class="brand-text">GC</span>
       </div>
     </div>
 
@@ -515,6 +526,21 @@
 
   function E(t) { return { t: t, i: "e" }; }
   function H(t) { return { t: t, i: "h" }; }
+
+  // ---------- SHARED AUDIO ----------
+  // One AudioContext, reused for every sound. iOS Safari suspends new contexts
+  // unless they're created and resumed inside a direct user gesture, and can
+  // silently refuse audio if a fresh context is spun up every time instead.
+  var audioCtx = null;
+  function getAudioContext() {
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    if (!audioCtx) audioCtx = new Ctx();
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume().catch(function () {});
+    }
+    return audioCtx;
+  }
 
   // ---------- CATEGORY DATA ----------
   var DEFAULT_CATEGORIES = [
@@ -862,8 +888,8 @@
   // Hard only: the classic "dun, dun, DUNNN" suspense sting. Easy and Mix are silent.
   function playIntensitySound() {
     try {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      var ctx = new Ctx();
+      var ctx = getAudioContext();
+      if (!ctx) return;
       var now = ctx.currentTime;
       function dun(time, freq, dur, vol) {
         var osc = ctx.createOscillator();
@@ -965,8 +991,8 @@
   // isFinal gives the settling flip a slightly lower, longer tone.
   function playFlipTick(isFinal) {
     try {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      var ctx = new Ctx();
+      var ctx = getAudioContext();
+      if (!ctx) return;
       var now = ctx.currentTime;
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
@@ -987,6 +1013,7 @@
 
   function draw() {
     if (getBuckets().length === 0) return;
+    getAudioContext(); // unlock audio here, inside the real tap, before the ticks fire on a timer
     drawBtn.disabled = true;
     topicCard.classList.add("spinning");
     favBtn.classList.remove("shown");
@@ -1020,8 +1047,8 @@
   // Short, soft "lub-dub" heartbeat, synthesised so no audio file is needed.
   function playHeartbeat() {
     try {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      var ctx = new Ctx();
+      var ctx = getAudioContext();
+      if (!ctx) return;
       function thump(time, freq, dur, vol) {
         var osc = ctx.createOscillator();
         var gain = ctx.createGain();
