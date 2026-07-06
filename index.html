@@ -391,15 +391,33 @@
     margin-bottom: 4px;
   }
   .reveal-word {
+    display: none;
     font-size: 38px;
     font-weight: 850;
     letter-spacing: -0.025em;
     color: var(--ink);
-    filter: blur(16px);
     user-select: none;
-    transition: filter .12s ease;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
-  .reveal-word.shown { filter: blur(0); }
+  .reveal-timer {
+    display: none;
+    width: 90px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(20,20,27,0.1);
+    overflow: hidden;
+  }
+  .reveal-timer-fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+  .topic-card-inner.revealing .reveal-word,
+  .topic-card-inner.revealing .reveal-timer { display: block; }
+  .topic-card-inner.revealing .reveal-instruction,
+  .topic-card-inner.revealing .reveal-btn { display: none; }
   .reveal-btn {
     background: linear-gradient(180deg, rgba(48,48,58,0.92), rgba(14,14,19,0.94));
     color: #fff;
@@ -410,6 +428,8 @@
     font-weight: 700;
     cursor: pointer;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     box-shadow: 0 10px 20px -10px rgba(20,20,27,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
   }
 
@@ -490,7 +510,7 @@
       </div>
 
       <div class="spinner-zone">
-        <div class="empty-hint" id="emptyHint">Try widening your categories.</div>
+        <div class="empty-hint" id="emptyHint">Try widening your categories or changing your intensity.</div>
         <div class="draw-row">
           <button class="draw-btn" id="drawBtn">Draw a topic</button>
         </div>
@@ -756,11 +776,12 @@
       var raw = localStorage.getItem(LS_KEY);
       if (raw) return JSON.parse(raw);
     } catch (e) {}
-    return { spins: {}, favourites: [], lastSubset: null };
+    return { spins: {}, seen: {}, favourites: [], lastSubset: null };
   }
 
   var state = loadState();
   if (!state.favourites) state.favourites = [];
+  if (!state.seen) state.seen = {};
 
   function saveState() {
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
@@ -919,10 +940,23 @@
   function poolForCategory(catId) {
     var pool = ALL_TOPICS.filter(function (t) { return t.categoryId === catId; });
     var cat = CATEGORY_BY_ID[catId];
-    if (cat && cat.noIntensity) return pool;
-    if (currentIntensity === "mix") return pool;
-    var want = currentIntensity === "easy" ? "e" : "h";
-    return pool.filter(function (t) { return t.intensity === want; });
+    if (!(cat && cat.noIntensity) && currentIntensity !== "mix") {
+      var want = currentIntensity === "easy" ? "e" : "h";
+      pool = pool.filter(function (t) { return t.intensity === want; });
+    }
+    // Favourited topics never come up in the random draw while favourited.
+    return pool.filter(function (t) { return state.favourites.indexOf(t.id) === -1; });
+  }
+
+  // Unseen topics only. Once every topic in a category (at the current
+  // intensity, favourites excluded) has been seen, its seen marks reset
+  // and the category cycles from the top again.
+  function drawPoolForCategory(catId) {
+    var pool = poolForCategory(catId);
+    var unseen = pool.filter(function (t) { return !state.seen[t.id]; });
+    if (unseen.length) return unseen;
+    pool.forEach(function (t) { delete state.seen[t.id]; });
+    return pool;
   }
 
   function getBuckets() {
@@ -935,7 +969,7 @@
     var buckets = getBuckets();
     if (!buckets.length) return null;
     var catId = buckets[Math.floor(Math.random() * buckets.length)];
-    var pool = poolForCategory(catId);
+    var pool = drawPoolForCategory(catId);
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
@@ -951,6 +985,12 @@
   var drawBtn = document.getElementById("drawBtn");
   var favBtn = document.getElementById("favBtn");
   var currentTopic = null;
+  var revealTimer = null;
+
+  function clearReveal() {
+    if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
+    topicCardInner.classList.remove("revealing");
+  }
 
   function escapeHtml(s) {
     var d = document.createElement("div");
@@ -959,20 +999,25 @@
   }
 
   function renderTopicCard(t, isShuffling) {
+    clearReveal();
     if (t.categoryId === "whatami" && !isShuffling) {
       topicCardInner.innerHTML =
         '<div class="topic-cat-tag">' + t.categoryName.replace("What Am I?", "💥 What Am I?") + '</div>' +
-        '<div class="reveal-instruction">Describe it without saying the word. Everyone else guesses. Only the describer should look, hold the button to peek.</div>' +
-        '<button class="reveal-btn" id="revealBtn" type="button">Hold to reveal</button>' +
-        '<div class="reveal-word" id="revealWord">' + escapeHtml(t.text) + '</div>';
-      var revealBtn = document.getElementById("revealBtn");
-      var revealWord = document.getElementById("revealWord");
-      var show = function () { revealWord.classList.add("shown"); };
-      var hide = function () { revealWord.classList.remove("shown"); };
-      revealBtn.addEventListener("pointerdown", show);
-      revealBtn.addEventListener("pointerup", hide);
-      revealBtn.addEventListener("pointerleave", hide);
-      revealBtn.addEventListener("pointercancel", hide);
+        '<div class="reveal-instruction">Describe it without saying the word. Everyone else guesses. Only the describer should look, tap the button to peek.</div>' +
+        '<button class="reveal-btn" id="revealBtn" type="button">Tap to reveal</button>' +
+        '<div class="reveal-word" id="revealWord">' + escapeHtml(t.text) + '</div>' +
+        '<div class="reveal-timer" id="revealTimer"><div class="reveal-timer-fill" id="revealTimerFill"></div></div>';
+      document.getElementById("revealBtn").addEventListener("click", function () {
+        clearReveal();
+        topicCardInner.classList.add("revealing");
+        var fill = document.getElementById("revealTimerFill");
+        fill.style.transition = "none";
+        fill.style.width = "100%";
+        void fill.offsetWidth; // force reflow so the transition below actually animates
+        fill.style.transition = "width 3s linear";
+        fill.style.width = "0%";
+        revealTimer = setTimeout(clearReveal, 3000);
+      });
       return;
     }
     var spins = state.spins[t.id] || 0;
@@ -1036,6 +1081,7 @@
         currentTopic = final;
         if (final) {
           state.spins[final.id] = (state.spins[final.id] || 0) + 1;
+          state.seen[final.id] = true;
           saveState();
           renderTopicCard(final, false);
           playFlipTick(true);
@@ -1090,6 +1136,7 @@
     saveState();
     updateFavButton();
     renderFavourites();
+    updateAvailability();
     if (!wasSaved) {
       favBtn.classList.remove("pulse");
       void favBtn.offsetWidth; // restart animation if clicked in quick succession
@@ -1136,6 +1183,7 @@
         saveState();
         renderFavourites();
         updateFavButton();
+        updateAvailability();
       });
 
       item.appendChild(main);
