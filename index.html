@@ -1087,7 +1087,7 @@
     var spins = state.spins[t.id] || 0;
     var longClass = t.text.length > 70 ? " long" : "";
     var kindNote = (t.categoryId === "controversial" && t.intensity === "h" && !isShuffling)
-      ? '<div class="topic-note">Be kind to each other here.</div>' : "";
+      ? '<div class="topic-note">Be kind to each other.</div>' : "";
     topicCardInner.innerHTML =
       '<div class="topic-cat-tag">' + t.categoryName + '</div>' +
       '<div class="topic-text' + longClass + '">' + escapeHtml(t.text) + '</div>' +
