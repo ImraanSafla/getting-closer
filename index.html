@@ -70,7 +70,7 @@
     padding: 22px 28px 0;
   }
   .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
-  .brand-mark { filter: drop-shadow(0 3px 6px rgba(20,20,30,0.35)); flex-shrink: 0; }
+  .brand-mark { flex-shrink: 0; }
   .brand-mark-path { fill: #14141b; }
 
   /* HERO */
@@ -295,6 +295,37 @@
     color: var(--ink-soft);
     font-weight: 600;
     padding-top: 4px;
+  }
+  .support {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 18px 6px 0;
+  }
+  .support-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .support-link {
+    display: inline-block;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border: 1px solid #cfcdd8;
+    background: rgba(255,255,255,0.5);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .support-link:hover {
+      color: var(--ink);
+      background: rgba(219,39,119,0.16);
+      border-color: rgba(219,39,119,0.45);
+    }
   }
   .draw-row {
     display: flex;
@@ -545,6 +576,12 @@
       </div>
 
     </div>
+
+    <div class="support">
+      <span class="support-text">Enjoying Getting Closer?</span>
+      <a class="support-link" href="https://ko-fi.com/imraan97" target="_blank" rel="noopener noreferrer" aria-label="Support Getting Closer with a small tip">Buy me a coffee ☕️</a>
+    </div>
+
     </div>
   </div>
 </div>
@@ -1055,7 +1092,7 @@
       '<div class="topic-cat-tag">' + t.categoryName + '</div>' +
       '<div class="topic-text' + longClass + '">' + escapeHtml(t.text) + '</div>' +
       kindNote +
-      (isShuffling ? "" : '<div class="topic-meta">Seen ' + spins + " time" + (spins === 1 ? "" : "s") + "</div>");
+      (isShuffling || spins < 2 ? "" : '<div class="topic-meta">Seen ' + spins + " times</div>");
   }
 
   function updateFavButton() {
