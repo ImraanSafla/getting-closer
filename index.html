@@ -290,6 +290,12 @@
     color: var(--ink-faint);
     font-weight: 600;
   }
+  .topic-note {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 600;
+    padding-top: 4px;
+  }
   .draw-row {
     display: flex;
     align-items: center;
@@ -685,6 +691,14 @@
       E("Should everyone invest young?"), E("Is property still the safest investment?"), E("The most overhyped tech stock"),
       E("Are dividends underrated?"), E("Is timing the market ever worth it?"), E("A sector everyone's sleeping on"),
       E("Are ETFs too good to be true?"), E("Will cash ever go out of fashion?")
+    ]},
+    { id: "whatami", emoji: "💥", name: "What Am I?", noIntensity: true, topics: [
+      E("Phone"), E("Umbrella"), E("Bridge"), E("Mirror"), E("Balloon"), E("Compass"), E("Candle"), E("Elevator"),
+      E("Keyboard"), E("Volcano"), E("Passport"), E("Blanket"), E("Fireworks"), E("Whisper"), E("Deadline"),
+      E("Nostalgia"), E("Jealousy"), E("Sunrise"), E("Silence"), E("Rumour"), E("Courage"), E("Habit"),
+      E("Souvenir"), E("Echo"), E("Anchor"), E("Detour"), E("Loophole"), E("Threshold"), E("Milestone"),
+      E("Suitcase"), E("Doormat"), E("Recipe"), E("Alibi"), E("Sequel"), E("Déjà vu"), E("Karma"),
+      E("Gravity"), E("Thermostat"), E("Escalator"), E("Backbone")
     ]}
   ];
 
@@ -709,6 +723,27 @@
       H("If you had to leave tonight with no chance to speak to anyone again, what would you regret not saying, and to whom?"), H("Your house is on fire. Everyone and every pet is safe. You have time for one more item. What do you grab, and why?"),
       H("Whose death in your family would affect you the most? Why?"), H("Share a real problem and ask for advice on how to handle it.")
     ]},
+    { id: "controversial", emoji: "⚖️", name: "Controversial", topics: [
+      E("Text back instantly, or leave it a few hours?"), E("Big wedding, or elope?"), E("Call, or text?"),
+      E("Split the bill, or one person pays?"), E("Cheek kiss hello, or wave from a distance?"), E("Plan the whole date, or wing it?"),
+      E("Match with your partner's outfit, or never?"), E("Gifts, or experiences?"), E("Retire in the mountains, or by the beach?"),
+      E("12-hour clock, or 24-hour clock?"), E("Ice cream, or frozen yoghurt?"),
+      E("Voice notes over 30 seconds should be illegal."), E("Saying \"I love you\" first is the braver move, not the weaker one."),
+      E("It's fine to use your partner's toothbrush in a pinch."), E("Couples who match their outfits have lost the plot."),
+      E("Naming a shared pet is harder than naming a child."), E("Third-date rule: outdated."),
+      E("Sharing a dessert is romantic, not a compromise."), E("A relationship needs a proper date night every week."),
+      E("Going to bed angry is sometimes the right call."), E("PDA in public: fine, or too much?"),
+      E("You should always text goodnight, even mid-argument."), E("Long-distance can genuinely work."),
+      E("Meeting the friends matters more than meeting the family."), E("Posting your relationship online, or keeping it offline?"),
+      E("One partner planning every holiday is a red flag."), E("Moving cities for a relationship this early is a mistake."),
+      H("Checking your partner's phone is never okay, even if you're suspicious."), H("Couples should share all their passwords."),
+      H("Couples should share their location with each other."), H("A 10-year age gap is a problem, full stop."),
+      H("Prenups are unromantic."), H("Keeping a private bank account in a marriage is a betrayal."),
+      H("Emotional cheating is worse than physical cheating."), H("Marriage is an outdated institution."),
+      H("Whether to have kids is non-negotiable: you're either in or out from day one."), H("A partner's politics can be a dealbreaker on their own."),
+      H("You should tell your partner about every serious ex."), H("Taking someone's surname should be a real conversation, not an assumption."),
+      H("Being financially \"compatible\" matters more than being romantically compatible."), H("Splitting finances 50/50 is the only fair way.")
+    ]},
     { id: "wyr", emoji: "🔀", name: "Would You Rather", topics: [
       E("Would you rather always be 10 minutes late or 20 minutes early?"), E("Would you rather have the ability to fly or be invisible?"),
       E("Would you rather only ever eat your favourite meal or never eat it again?"), E("Would you rather lose your phone for a week or your wallet for a week?"),
@@ -720,14 +755,6 @@
       E("Would you rather always overdress or always underdress for events?"), E("Would you rather have the best seat at every event or free entry to every event?"),
       H("Would you rather know how you die or when you die?"), H("Would you rather be brutally honest all the time or a comforting liar when it counts?"),
       H("Would you rather relive your best memory forever or make a new one you'll never forget?"), H("Would you rather lose all your old photos or all your new ones from this year?")
-    ]},
-    { id: "whatami", emoji: "💥", name: "What Am I?", noIntensity: true, topics: [
-      E("Phone"), E("Umbrella"), E("Bridge"), E("Mirror"), E("Balloon"), E("Compass"), E("Candle"), E("Elevator"),
-      E("Keyboard"), E("Volcano"), E("Passport"), E("Blanket"), E("Fireworks"), E("Whisper"), E("Deadline"),
-      E("Nostalgia"), E("Jealousy"), E("Sunrise"), E("Silence"), E("Rumour"), E("Courage"), E("Habit"),
-      E("Souvenir"), E("Echo"), E("Anchor"), E("Detour"), E("Loophole"), E("Threshold"), E("Milestone"),
-      E("Suitcase"), E("Doormat"), E("Recipe"), E("Alibi"), E("Sequel"), E("Déjà vu"), E("Karma"),
-      E("Gravity"), E("Thermostat"), E("Escalator"), E("Backbone")
     ]}
   ];
 
@@ -1022,9 +1049,12 @@
     }
     var spins = state.spins[t.id] || 0;
     var longClass = t.text.length > 70 ? " long" : "";
+    var kindNote = (t.categoryId === "controversial" && t.intensity === "h" && !isShuffling)
+      ? '<div class="topic-note">Be kind to each other here.</div>' : "";
     topicCardInner.innerHTML =
       '<div class="topic-cat-tag">' + t.categoryName + '</div>' +
       '<div class="topic-text' + longClass + '">' + escapeHtml(t.text) + '</div>' +
+      kindNote +
       (isShuffling ? "" : '<div class="topic-meta">Seen ' + spins + " time" + (spins === 1 ? "" : "s") + "</div>");
   }
 
