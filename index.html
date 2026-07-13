@@ -10,6 +10,17 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="theme-color" content="#7c3aed">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Getting Closer">
+<meta property="og:description" content="A conversation game for dates, parties and everyone in between.">
+<meta property="og:url" content="https://imraansafla.github.io/getting-closer/">
+<meta property="og:image" content="https://imraansafla.github.io/getting-closer/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Getting Closer">
+<meta name="twitter:description" content="A conversation game for dates, parties and everyone in between.">
+<meta name="twitter:image" content="https://imraansafla.github.io/getting-closer/og-image.png">
 <style>
   :root {
     color-scheme: light;
@@ -840,7 +851,7 @@
       var raw = localStorage.getItem(LS_KEY);
       if (raw) return JSON.parse(raw);
     } catch (e) {}
-    return { spins: {}, seen: {}, favourites: [], lastSubset: null };
+    return { spins: {}, seen: {}, favourites: [] };
   }
 
   var state = loadState();
@@ -869,13 +880,7 @@
     allChip.className = "chip all-chip" + (isAllActive() ? " active" : "");
     allChip.textContent = "📚 All";
     allChip.addEventListener("click", function () {
-      if (isAllActive()) {
-        var subset = state.lastSubset && state.lastSubset.length ? state.lastSubset : [ALL_IDS[0]];
-        selectedDefault = subset.slice();
-      } else {
-        state.lastSubset = selectedDefault.slice();
-        selectedDefault = ALL_IDS.slice();
-      }
+      selectedDefault = isAllActive() ? [] : ALL_IDS.slice();
       saveState();
       renderChips();
       updateAvailability();
